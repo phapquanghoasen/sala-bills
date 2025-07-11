@@ -24,4 +24,5 @@ export interface Bill {
   foods: BillFood[];
   amount: number;
   history?: BillHistory[];
+  tableNumber: string;
 }

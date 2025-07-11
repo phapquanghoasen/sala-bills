@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../../../firebase/config';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Food } from '@/types/food';
+import FoodForm from '@/components/FoodForm';
+import { formatPrice } from '@/utils/formatPrice';
 
 interface FoodDetailProps {
   params: Promise<{ id: string }>;
@@ -29,11 +31,6 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-  });
 
   useEffect(() => {
     const fetchFood = async () => {
@@ -43,13 +40,8 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
           const foodData = await getDoc(foodDoc);
           if (foodData.exists()) {
             setFood(foodData.data() as Food);
-            setFormData({
-              name: foodData.data().name || '',
-              description: foodData.data().description || '',
-              price: foodData.data().price?.toString() || '',
-            });
           } else {
-            setError('Không tìm thấy món ăn!');
+            setError(FOOD_DETAIL_NOT_FOUND);
           }
         } catch {
           setError('Lỗi khi tải món ăn!');
@@ -62,32 +54,25 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
     fetchFood();
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
   const handleEdit = () => setEditMode(true);
-
   const handleCancel = () => setEditMode(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim() || !formData.description.trim() || isNaN(Number(formData.price)) || Number(formData.price) < 0) {
+  const handleEditSubmit = async (data: { name: string; description: string; price: number }) => {
+    if (!data.name.trim() || isNaN(Number(data.price)) || Number(data.price) < 0) {
       setError(FOOD_DETAIL_INVALID);
       return;
     }
     try {
       const foodRef = doc(db, 'foods', id);
       await updateDoc(foodRef, {
-        name: formData.name,
-        description: formData.description,
-        price: parseInt(formData.price, 10),
+        name: data.name,
+        description: data.description,
+        price: Number(data.price),
       });
       setFood({
         ...food,
-        ...formData,
-        price: parseInt(formData.price, 10),
+        ...data,
+        price: Number(data.price),
       } as Food);
       setEditMode(false);
       setError(null);
@@ -102,76 +87,30 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{editMode ? FOOD_DETAIL_EDIT_TITLE : FOOD_DETAIL_TITLE}</h1>
+      <h1 className="text-xl font-bold mb-4 text-center sm:text-2xl sm:text-left">{editMode ? FOOD_DETAIL_EDIT_TITLE : FOOD_DETAIL_TITLE}</h1>
       {editMode ? (
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
-          <div>
-            <label className="block text-sm font-medium">{FOOD_DETAIL_NAME}</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">{FOOD_DETAIL_DESC}</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">{FOOD_DETAIL_PRICE}</label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              required
-              min={0}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-            <div className="text-xs text-gray-500 mt-1">{formData.price && !isNaN(Number(formData.price)) ? Number(formData.price).toLocaleString('vi-VN') + ' VNĐ' : ''}</div>
-          </div>
-          <div className="space-x-2">
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              {FOOD_DETAIL_SAVE}
-            </button>
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="bg-gray-400 text-white px-4 py-2 rounded"
-            >
-              {FOOD_DETAIL_CANCEL}
-            </button>
-          </div>
-        </form>
+        <FoodForm
+          initialData={food}
+          onSubmit={handleEditSubmit}
+          error={error}
+          submitLabel={FOOD_DETAIL_SAVE}
+          cancelLabel={FOOD_DETAIL_CANCEL}
+          onCancel={handleCancel}
+        />
       ) : (
-        <div>
-          <p>
-            <b>Tên món:</b> {food.name}
+        <div className="max-w-full sm:max-w-lg mx-auto bg-white p-4 sm:p-6 rounded shadow">
+          <p className="mb-2">
+            <b>{FOOD_DETAIL_NAME}:</b> {food.name}
           </p>
-          <p>
-            <b>Mô tả:</b> {food.description}
+          <p className="mb-2">
+            <b>{FOOD_DETAIL_DESC}:</b> {food.description}
           </p>
-          <p>
-            <b>Giá:</b> {food.price?.toLocaleString('vi-VN')} VNĐ
+          <p className="mb-2">
+            <b>{FOOD_DETAIL_PRICE}:</b> {formatPrice(food.price)}
           </p>
           <button
             onClick={handleEdit}
-            className="mt-4 bg-yellow-500 text-white px-4 py-2 rounded"
+            className="mt-4 bg-yellow-500 text-white px-4 py-2 rounded w-full sm:w-auto"
           >
             {FOOD_DETAIL_EDIT}
           </button>

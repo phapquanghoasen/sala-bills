@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { db } from '../../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import FoodsTable from './FoodsTable';
 import Link from 'next/link';
 import { Food } from '@/types/food';
+import Table from '@/components/Table';
+import { Column } from '@/types/table';
+import { formatPrice } from '@/utils/formatPrice';
 
 const FOODS_TITLE = 'Danh sách món ăn';
 const FOODS_ADD_BUTTON = '+ Thêm món ăn';
@@ -43,21 +45,39 @@ export default function FoodsPage() {
     fetchFoods();
   }, []);
 
+  const columns: Column<Food>[] = [
+    {
+      title: 'Tên món',
+      className: 'px-2 py-2 border-b border-gray-200 text-left font-semibold text-gray-800 w-2/3 max-w-[220px] truncate',
+      render: food => food.name,
+    },
+    {
+      title: 'Giá (VNĐ)',
+      className: 'px-2 py-2 border-b border-gray-200 text-left text-gray-800 w-1/3 max-w-[120px] truncate',
+      render: food => formatPrice(food.price),
+    },
+  ];
+
   if (loading) return <div>{FOODS_LOADING}</div>;
   if (error) return <div>{error}</div>;
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">{FOODS_TITLE}</h1>
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mb-4">
+        <h1 className="text-xl font-bold sm:text-2xl uppercase text-center sm:text-left w-full sm:w-auto">{FOODS_TITLE}</h1>
         <Link
           href="/foods/create-food"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto text-center"
         >
           {FOODS_ADD_BUTTON}
         </Link>
       </div>
-      <FoodsTable foods={foods} />
+      <Table
+        columns={columns}
+        data={foods}
+        emptyText="Không có món ăn nào."
+        onRowClick={food => (window.location.href = `/foods/${food.id}`)}
+      />
     </div>
   );
 }

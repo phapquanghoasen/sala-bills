@@ -1,49 +1,26 @@
-import Link from 'next/link';
-import Image from 'next/image';
+import { Food } from '@/types/food';
+import { useRouter } from 'next/navigation';
 
-interface Food {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  imageUrl?: string;
-}
-
-const FOOD_ITEM_VIEW_EDIT = 'Xem / Sửa';
-
-const FoodItem = ({ food }: { food: Food }) => (
-  <tr className="hover:bg-blue-50 transition-colors">
-    <td className="px-4 py-2 border-b border-gray-200 text-left text-gray-800">
-      {food.imageUrl ? (
-        <Image
-          src={food.imageUrl}
-          alt={food.name}
-          width={56}
-          height={56}
-          className="rounded object-cover"
-        />
-      ) : (
-        <div className="w-14 h-14 bg-gray-200 rounded flex items-center justify-center text-gray-400"></div>
-      )}
-    </td>
-    <td className="px-4 py-2 border-b border-gray-200 text-left font-semibold text-gray-800">
-      {food.name}
-    </td>
-    <td className="px-4 py-2 border-b border-gray-200 text-left text-gray-800">
-      {food.description}
-    </td>
-    <td className="px-4 py-2 border-b border-gray-200 text-left text-gray-800">
-      {food.price.toLocaleString('vi-VN')} VNĐ
-    </td>
-    <td className="px-4 py-2 border-b border-gray-200 text-left font-semibold text-gray-800">
-      <Link
-        href={`/foods/${food.id}`}
-        className="text-blue-600 hover:underline"
-      >
-        {FOOD_ITEM_VIEW_EDIT}
-      </Link>
-    </td>
-  </tr>
-);
+const FoodItem = ({ food }: { food: Food }) => {
+  const router = useRouter();
+  return (
+    <tr
+      className="hover:bg-blue-50 transition-colors cursor-pointer"
+      onClick={() => router.push(`/foods/${food.id}`)}
+      tabIndex={0}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') router.push(`/foods/${food.id}`);
+      }}
+      role="button"
+    >
+      <td className="px-2 py-2 border-b border-gray-200 text-left font-semibold text-gray-800 sm:px-4 max-w-[180px] truncate">
+        {food.name}
+      </td>
+      <td className="px-2 py-2 border-b border-gray-200 text-left text-gray-800 sm:px-4 max-w-[120px] truncate">
+        {food.price.toLocaleString('vi-VN')}
+      </td>
+    </tr>
+  );
+};
 
 export default FoodItem;
