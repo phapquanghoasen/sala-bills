@@ -1,17 +1,50 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { db } from '../../firebase/config';
+import { collection, getDocs } from 'firebase/firestore';
 import FoodsTable from './FoodsTable';
 import Link from 'next/link';
+import { Food } from '@/types/food';
 
 const FOODS_TITLE = 'Danh sách món ăn';
 const FOODS_ADD_BUTTON = '+ Thêm món ăn';
+const FOODS_LOADING = 'Đang tải...';
+const FOODS_ERROR = 'Lỗi khi tải danh sách món ăn';
 
-async function getFoods() {
-  const res = await fetch('http://localhost:3000/api/foods', { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch foods');
-  return res.json();
-}
+export default function FoodsPage() {
+  const [foods, setFoods] = useState<Food[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default async function FoodsPage() {
-  const foods = await getFoods();
+  useEffect(() => {
+    const fetchFoods = async () => {
+      try {
+        const foodsCollection = collection(db, 'foods');
+        const foodsSnapshot = await getDocs(foodsCollection);
+        const foodsList = foodsSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name || '',
+            description: data.description || '',
+            price: typeof data.price === 'number' ? data.price : 0,
+            imageUrl: data.imageUrl || '',
+            createdAt: data.createdAt || new Date().toISOString(),
+          };
+        });
+        setFoods(foodsList);
+      } catch {
+        setError(FOODS_ERROR);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFoods();
+  }, []);
+
+  if (loading) return <div>{FOODS_LOADING}</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="container mx-auto p-4">
