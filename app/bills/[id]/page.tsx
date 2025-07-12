@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { doc, getDoc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
 import { getBillTotal } from '@/utils/bill';
@@ -73,6 +73,7 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
         return;
       }
       const oldBill = billSnap.data();
+      const updatedAt = Timestamp.now();
 
       await updateDoc(billRef, {
         code: oldBill.code,
@@ -82,10 +83,10 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
         history: [
           ...(oldBill.history || []),
           {
-            updatedAt: serverTimestamp(),
+            updatedAt,
             oldData: {
               code: oldBill.code,
-              description: oldBill.description,
+              note: oldBill.note,
               foods: oldBill.foods,
             },
           },
@@ -93,7 +94,8 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
       });
 
       setEditMode(false);
-    } catch {
+    } catch (error) {
+      console.log('error', error);
       setError(EDIT_BILL_UPDATE_ERROR);
     } finally {
       setIsSaving(false);
