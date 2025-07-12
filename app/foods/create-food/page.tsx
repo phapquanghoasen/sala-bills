@@ -1,10 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
-import { db } from '../../../firebase/config';
+
 import { collection, addDoc } from 'firebase/firestore';
+
+import { db } from '@/firebase/config';
+
 import { RequestCreateFood } from '@/types/food';
+
 import FoodForm from '@/components/FoodForm';
 
 const CREATE_FOOD_TITLE = 'Thêm món ăn mới';

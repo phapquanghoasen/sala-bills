@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+
+import { formatPrice } from '@/utils/format';
+
 import type { RequestCreateFood } from '@/types/food';
-import { formatPrice } from '@/utils/formatPrice';
 
 interface FoodFormProps {
   initialData?: Partial<RequestCreateFood>;

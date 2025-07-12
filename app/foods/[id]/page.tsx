@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { db } from '../../../firebase/config';
+
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+
+import { db } from '@/firebase/config';
+import { formatPrice } from '@/utils/format';
+
 import { Food } from '@/types/food';
+
 import FoodForm from '@/components/FoodForm';
-import { formatPrice } from '@/utils/formatPrice';
 
 interface FoodDetailProps {
   params: Promise<{ id: string }>;

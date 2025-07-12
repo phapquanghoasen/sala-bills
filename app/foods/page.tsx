@@ -1,13 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { db } from '../../firebase/config';
-import { collection, getDocs } from 'firebase/firestore';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import { collection, getDocs } from 'firebase/firestore';
+
+import { db } from '@/firebase/config';
+import { formatPrice } from '@/utils/format';
+
 import { Food } from '@/types/food';
-import Table from '@/components/Table';
 import { Column } from '@/types/table';
-import { formatPrice } from '@/utils/formatPrice';
+
+import Table from '@/components/Table';
 
 const FOODS_TITLE = 'Danh sách món ăn';
 const FOODS_ADD_BUTTON = '+ Thêm món ăn';
@@ -18,6 +24,7 @@ export default function FoodsPage() {
   const [foods, setFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchFoods = async () => {
@@ -48,12 +55,12 @@ export default function FoodsPage() {
   const columns: Column<Food>[] = [
     {
       title: 'Tên món',
-      className: 'px-2 py-2 border-b border-gray-200 text-left font-semibold text-gray-800 w-2/3 max-w-[220px] truncate',
+      className: 'w-2/3 max-w-[220px] font-semibold',
       render: food => food.name,
     },
     {
       title: 'Giá (VNĐ)',
-      className: 'px-2 py-2 border-b border-gray-200 text-left text-gray-800 w-1/3 max-w-[120px] truncate',
+      className: 'w-1/3 max-w-[120px]',
       render: food => formatPrice(food.price),
     },
   ];
@@ -76,7 +83,7 @@ export default function FoodsPage() {
         columns={columns}
         data={foods}
         emptyText="Không có món ăn nào."
-        onRowClick={food => (window.location.href = `/foods/${food.id}`)}
+        onRowClick={food => router.push(`/foods/${food.id}`)}
       />
     </div>
   );

@@ -26,3 +26,9 @@ export interface Bill {
   history?: BillHistory[];
   tableNumber: string;
 }
+
+export type BillFormData = {
+  tableNumber: string;
+  description: string;
+  foods: BillFood[];
+};

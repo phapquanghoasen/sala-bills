@@ -1,13 +1,21 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+
 import Link from 'next/link';
-import { db } from '../../firebase/config';
+import { useRouter } from 'next/navigation';
+
 import { collection, getDocs } from 'firebase/firestore';
-import Table from '@/components/Table';
+
+import { getBillTotal } from '@/utils/bill';
+import { formatPrice } from '@/utils/format';
+
 import { Bill } from '@/types/bill';
-import { formatPrice } from '@/utils/formatPrice';
 import { Column } from '@/types/table';
+
+import Table from '@/components/Table';
+
+import { db } from '../firebase/config';
 
 const BILLS_TITLE = 'Danh sách hóa đơn';
 const BILLS_ADD_BUTTON = '+ Thêm hóa đơn';
@@ -18,19 +26,19 @@ const BILLS_EMPTY = 'Không có hóa đơn nào.';
 const columns: Column<Bill>[] = [
   {
     title: 'Mã hóa đơn',
-    className: 'px-2 py-2 border-b border-gray-200 text-left text-blue-800 text-blue-700 w-2/5 max-w-[120px] truncate',
+    className: 'text-blue-800 w-2/5 max-w-[120px]',
     render: (bill: Bill) => bill.code,
   },
   {
     title: 'Số bàn',
-    className: 'px-2 py-2 border-b border-gray-200 text-left w-1/5 max-w-[60px] truncate', // đổi text-center thành text-left
+    className: 'w-1/5 max-w-[60px]',
     render: (bill: Bill) => bill.tableNumber ?? '-',
   },
   {
     title: 'Số tiền',
-    className: 'px-2 py-2 border-b border-gray-200 text-left text-gray-800 w-2/5 max-w-[120px] truncate',
+    className: 'w-2/5 max-w-[120px]',
     render: (bill: Bill) => {
-      const total = Array.isArray(bill.foods) ? bill.foods.reduce((sum, food) => sum + food.price * food.quantity, 0) : 0;
+      const total = getBillTotal(bill.foods);
       return formatPrice(total);
     },
   },
@@ -40,6 +48,7 @@ const Bills: React.FC = () => {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchBills = async () => {
@@ -50,7 +59,6 @@ const Bills: React.FC = () => {
           id: doc.id,
           ...doc.data(),
         })) as Bill[];
-        // Sắp xếp giảm dần theo createdAt
         billsList.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         setBills(billsList);
       } catch {
@@ -68,7 +76,9 @@ const Bills: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mb-4">
-        <h1 className="text-xl font-bold sm:text-2xl uppercase text-center sm:text-left w-full sm:w-auto">{BILLS_TITLE}</h1>
+        <h1 className="text-xl font-bold sm:text-2xl uppercase text-center sm:text-left w-full sm:w-auto">
+          {BILLS_TITLE}
+        </h1>
         <Link
           href="/bills/create-bill"
           className="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto text-center"
@@ -80,7 +90,7 @@ const Bills: React.FC = () => {
         columns={columns}
         data={bills}
         emptyText={BILLS_EMPTY}
-        onRowClick={bill => (window.location.href = `/bills/${bill.id}`)}
+        onRowClick={bill => router.push(`/bills/${bill.id}`)}
       />
     </div>
   );
