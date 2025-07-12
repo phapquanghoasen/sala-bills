@@ -12,7 +12,6 @@ const FIELD_LABEL_CLASS = 'font-semibold';
 const FIELD_VALUE_CLASS = 'font-mono';
 
 const TIME_LABEL = 'Thời gian: ';
-const CODE_LABEL = 'Mã HĐ: ';
 const LIST_LABEL = 'Danh sách món cũ:';
 
 const BillHistoryList: React.FC<BillHistoryListProps> = ({ history }) => (
@@ -25,10 +24,6 @@ const BillHistoryList: React.FC<BillHistoryListProps> = ({ history }) => (
           key={idx}
           className="mb-2 border-b last:border-b-0 pb-2 sm:pb-3"
         >
-          <div>
-            <span className={FIELD_LABEL_CLASS}>{CODE_LABEL}</span>
-            <span className={FIELD_VALUE_CLASS}>{h.oldData.code}</span>
-          </div>
           <div>
             <span className={FIELD_LABEL_CLASS}>{TIME_LABEL}</span>
             <span className={FIELD_VALUE_CLASS}>

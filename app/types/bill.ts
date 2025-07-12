@@ -18,7 +18,7 @@ export interface BillHistory {
 
 export interface Bill {
   id: string;
-  description: string;
+  note?: string;
   createdAt: string;
   code: string;
   foods: BillFood[];
@@ -28,7 +28,7 @@ export interface Bill {
 }
 
 export type BillFormData = {
-  tableNumber: string;
-  description: string;
   foods: BillFood[];
+  note: string;
+  tableNumber: string;
 };

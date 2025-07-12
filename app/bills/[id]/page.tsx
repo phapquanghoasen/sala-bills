@@ -16,12 +16,13 @@ import ViewBill from '@/components/ViewBill';
 const BILL_LOAD_ERROR = 'Lỗi khi tải hóa đơn!';
 const BILL_LOADING = 'Đang tải hóa đơn...';
 const BILL_NOT_FOUND = 'Không tìm thấy hóa đơn!';
-const BILL_TITLE = 'Chi tiết hóa đơn';
-const BILL_UPDATE_ERROR = 'Lỗi khi cập nhật hóa đơn!';
-const BILL_UPDATE_NOT_FOUND = 'Không tìm thấy hóa đơn để cập nhật!';
 const EDIT_BILL_CANCEL = 'Hủy';
 const EDIT_BILL_SAVE = 'Lưu';
 const EDIT_BILL_SAVING = 'Đang lưu...';
+const EDIT_BILL_TITLE = 'Chỉnh sửa hóa đơn';
+const EDIT_BILL_UPDATE_ERROR = 'Lỗi khi cập nhật hóa đơn!';
+const EDIT_BILL_UPDATE_NOT_FOUND = 'Không tìm thấy hóa đơn để cập nhật!';
+const VIEW_BILL_TITLE = 'Chi tiết hóa đơn';
 
 interface BillDetailProps {
   params: Promise<{ id: string }>;
@@ -60,14 +61,14 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
     return () => unsubscribe();
   }, [id]);
 
-  const handleUpdateBill = async ({ tableNumber, description, foods }: BillFormData) => {
+  const handleUpdateBill = async ({ tableNumber, note, foods }: BillFormData) => {
     setIsSaving(true);
     try {
       const billRef = doc(db, 'bills', id);
       const billSnap = await getDoc(billRef);
 
       if (!billSnap.exists()) {
-        setError(BILL_UPDATE_NOT_FOUND);
+        setError(EDIT_BILL_UPDATE_NOT_FOUND);
         setIsSaving(false);
         return;
       }
@@ -76,7 +77,7 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
       await updateDoc(billRef, {
         code: oldBill.code,
         tableNumber,
-        description,
+        note,
         foods,
         history: [
           ...(oldBill.history || []),
@@ -93,7 +94,7 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
 
       setEditMode(false);
     } catch {
-      setError(BILL_UPDATE_ERROR);
+      setError(EDIT_BILL_UPDATE_ERROR);
     } finally {
       setIsSaving(false);
     }
@@ -107,11 +108,11 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{BILL_TITLE}</h1>
       {editMode ? (
         <BillForm
+          title={EDIT_BILL_TITLE}
           initialTableNumber={bill.tableNumber}
-          initialDescription={bill.description}
+          initialNote={bill.note}
           initialSelectedFoods={bill.foods}
           submitLabel={isSaving ? EDIT_BILL_SAVING : EDIT_BILL_SAVE}
           cancelLabel={EDIT_BILL_CANCEL}
@@ -121,6 +122,7 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
         />
       ) : (
         <ViewBill
+          title={VIEW_BILL_TITLE}
           bill={bill}
           billId={id}
           total={total}

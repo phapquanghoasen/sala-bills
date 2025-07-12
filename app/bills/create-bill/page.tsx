@@ -24,7 +24,7 @@ const CreateBill: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async ({ tableNumber, description, foods }: BillFormData) => {
+  const handleCreateBill = async ({ tableNumber, note, foods }: BillFormData) => {
     if (!tableNumber.trim() || foods.length === 0) {
       setError(CREATE_BILL_VALIDATE_ERROR);
       return;
@@ -37,20 +37,11 @@ const CreateBill: React.FC = () => {
       const billCount = billsSnapshot.size + 1;
       const newCode = `${CREATE_BILL_CODE_PREFIX}${billCount.toString().padStart(8, '0')}`;
 
-      const foodsWithAmount = foods.map(food => ({
-        id: food.id,
-        name: food.name || '',
-        price: food.price || 0,
-        description: food.description || '',
-        imageUrl: food.imageUrl || '',
-        quantity: food.quantity || 1,
-      }));
-
       await addDoc(collection(db, 'bills'), {
         code: newCode,
         tableNumber,
-        description,
-        foods: foodsWithAmount,
+        note,
+        foods,
         createdAt: serverTimestamp(),
         history: [],
       });
@@ -64,11 +55,11 @@ const CreateBill: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{CREATE_BILL_TITLE}</h1>
       <BillForm
+        title={CREATE_BILL_TITLE}
         error={error}
         submitLabel={isSubmitting ? CREATE_BILL_SUBMIT_LABEL_LOADING : CREATE_BILL_SUBMIT_LABEL}
-        onSubmit={handleSubmit}
+        onSubmit={handleCreateBill}
       />
     </div>
   );
