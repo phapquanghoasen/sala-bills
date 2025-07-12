@@ -35,6 +35,8 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
   const [printLoading, setPrintLoading] = useState(false);
 
   const handlePrint = async () => {
+    const confirmPrint = window.confirm('Bạn có chắc chắn muốn gửi yêu cầu in hóa đơn này?');
+    if (!confirmPrint) return;
     setPrintLoading(true);
     try {
       await addDoc(collection(db, 'printQueue'), {
