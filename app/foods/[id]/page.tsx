@@ -91,7 +91,9 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-xl font-bold mb-4 text-center sm:text-2xl sm:text-left">{editMode ? FOOD_DETAIL_EDIT_TITLE : FOOD_DETAIL_TITLE}</h1>
+      <h1 className="text-xl font-bold mb-4 text-center sm:text-2xl sm:text-left">
+        {editMode ? FOOD_DETAIL_EDIT_TITLE : FOOD_DETAIL_TITLE}
+      </h1>
       {editMode ? (
         <FoodForm
           initialData={food}
@@ -104,13 +106,16 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
       ) : (
         <div className="max-w-full sm:max-w-lg mx-auto bg-white p-4 sm:p-6 rounded shadow">
           <p className="mb-2">
-            <b>{FOOD_DETAIL_NAME}:</b> {food.name}
+            <b>{FOOD_DETAIL_NAME}:</b>
+            <span className="m-1">{food.name}</span>
           </p>
           <p className="mb-2">
-            <b>{FOOD_DETAIL_DESC}:</b> {food.description}
+            <b>{FOOD_DETAIL_PRICE}:</b>
+            <span className="m-1">{formatPrice(food.price)}</span>
           </p>
           <p className="mb-2">
-            <b>{FOOD_DETAIL_PRICE}:</b> {formatPrice(food.price)}
+            <b>{FOOD_DETAIL_DESC}:</b>
+            <span className="m-1">{food.description}</span>
           </p>
           <button
             onClick={handleEdit}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
 
@@ -19,12 +19,12 @@ const CreateFood: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleFormSubmit = async ({ name, description, price }: RequestCreateFood) => {
+  const handleCreateFood = async ({ name, description, price }: RequestCreateFood) => {
     const foodData = {
       name,
       description,
       price,
-      createdAt: new Date().toISOString(),
+      createdAt: serverTimestamp(),
     };
 
     try {
@@ -37,9 +37,11 @@ const CreateFood: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-xl font-bold text-center uppercase mb-4 sm:text-2xl sm:mb-6">{CREATE_FOOD_TITLE}</h1>
+      <h1 className="text-xl font-bold text-center uppercase mb-4 sm:text-2xl sm:mb-6">
+        {CREATE_FOOD_TITLE}
+      </h1>
       <FoodForm
-        onSubmit={handleFormSubmit}
+        onSubmit={handleCreateFood}
         error={error}
         submitLabel="Tạo món ăn"
       />

@@ -13,20 +13,27 @@ interface FoodFormProps {
   onCancel?: () => void;
 }
 
-const FOOD_FORM_NAME = 'Tên món ăn';
 const FOOD_FORM_DESC = 'Mô tả';
+const FOOD_FORM_NAME = 'Tên món ăn';
 const FOOD_FORM_PRICE = 'Giá';
 
-const FoodForm = ({ initialData = {}, onSubmit, error, submitLabel, cancelLabel, onCancel }: FoodFormProps) => {
+const FoodForm = ({
+  initialData = {},
+  onSubmit,
+  error,
+  submitLabel,
+  cancelLabel,
+  onCancel,
+}: FoodFormProps) => {
   const [name, setName] = useState<string>(initialData.name || '');
-  const [price, setPrice] = useState<string>(initialData.price !== undefined ? String(initialData.price) : '');
+  const [price, setPrice] = useState<string>(String(initialData.price || ''));
   const [description, setDescription] = useState<string>(initialData.description || '');
 
   useEffect(() => {
     setName(initialData.name || '');
-    setPrice(initialData.price !== undefined ? String(initialData.price) : '');
+    setPrice(String(initialData.price || ''));
     setDescription(initialData.description || '');
-  }, [initialData]);
+  }, [initialData.name, initialData.price, initialData.description]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,15 +64,6 @@ const FoodForm = ({ initialData = {}, onSubmit, error, submitLabel, cancelLabel,
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">{FOOD_FORM_DESC}</label>
-        <textarea
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-base resize-none"
-          rows={3}
-        />
-      </div>
-      <div>
         <label className="block text-sm font-medium mb-1">{FOOD_FORM_PRICE}</label>
         <input
           type="number"
@@ -75,7 +73,18 @@ const FoodForm = ({ initialData = {}, onSubmit, error, submitLabel, cancelLabel,
           min={0}
           className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-base"
         />
-        <div className="text-xs text-gray-500 mt-1">{price && `Định dạng: ${formatPrice(price)}`}</div>
+        <div className="text-xs text-gray-500 mt-1">
+          {price && `Định dạng: ${formatPrice(price)}`}
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">{FOOD_FORM_DESC}</label>
+        <textarea
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-base resize-none"
+          rows={3}
+        />
       </div>
       <div className={cancelLabel ? 'flex flex-col gap-2 sm:flex-row sm:gap-4' : ''}>
         <button

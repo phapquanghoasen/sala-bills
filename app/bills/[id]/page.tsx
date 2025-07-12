@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
 import { getBillTotal } from '@/utils/bill';
@@ -82,7 +82,7 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
         history: [
           ...(oldBill.history || []),
           {
-            updatedAt: new Date().toISOString(),
+            updatedAt: serverTimestamp(),
             oldData: {
               code: oldBill.code,
               description: oldBill.description,

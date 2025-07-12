@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase-admin/firestore';
+
 export interface BillFood {
   id: string;
   name: string;
@@ -8,7 +10,7 @@ export interface BillFood {
 }
 
 export interface BillHistory {
-  updatedAt: string;
+  updatedAt: Timestamp;
   oldData: {
     code: string;
     description: string;
@@ -19,12 +21,11 @@ export interface BillHistory {
 export interface Bill {
   id: string;
   note?: string;
-  createdAt: string;
   code: string;
   foods: BillFood[];
-  amount: number;
   history?: BillHistory[];
   tableNumber: string;
+  createdAt: Timestamp;
 }
 
 export type BillFormData = {

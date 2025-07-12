@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 import { getBillTotal } from '@/utils/bill';
 import { formatPrice } from '@/utils/format';
@@ -53,15 +53,15 @@ const Bills: React.FC = () => {
   useEffect(() => {
     const fetchBills = async () => {
       try {
-        const billsCollection = collection(db, 'bills');
-        const billsSnapshot = await getDocs(billsCollection);
+        const billsQuery = query(collection(db, 'bills'), orderBy('createdAt', 'desc'));
+        const billsSnapshot = await getDocs(billsQuery);
         const billsList = billsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
         })) as Bill[];
-        billsList.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         setBills(billsList);
-      } catch {
+      } catch (error) {
+        console.error('Error fetching bills:', error);
         setError(BILLS_ERROR);
       } finally {
         setLoading(false);

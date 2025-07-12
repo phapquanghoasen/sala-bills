@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
 import { formatPrice } from '@/utils/format';
@@ -29,8 +29,8 @@ export default function FoodsPage() {
   useEffect(() => {
     const fetchFoods = async () => {
       try {
-        const foodsCollection = collection(db, 'foods');
-        const foodsSnapshot = await getDocs(foodsCollection);
+        const foodsQuery = query(collection(db, 'foods'), orderBy('name'));
+        const foodsSnapshot = await getDocs(foodsQuery);
         const foodsList = foodsSnapshot.docs.map(doc => {
           const data = doc.data();
           return {
@@ -39,7 +39,7 @@ export default function FoodsPage() {
             description: data.description || '',
             price: typeof data.price === 'number' ? data.price : 0,
             imageUrl: data.imageUrl || '',
-            createdAt: data.createdAt || new Date().toISOString(),
+            createdAt: data.createdAt,
           };
         });
         setFoods(foodsList);
@@ -71,7 +71,9 @@ export default function FoodsPage() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mb-4">
-        <h1 className="text-xl font-bold sm:text-2xl uppercase text-center sm:text-left w-full sm:w-auto">{FOODS_TITLE}</h1>
+        <h1 className="text-xl font-bold sm:text-2xl uppercase text-center sm:text-left w-full sm:w-auto">
+          {FOODS_TITLE}
+        </h1>
         <Link
           href="/foods/create-food"
           className="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto text-center"

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { formatDate } from '@/utils/date';
 import { formatPrice } from '@/utils/format';
 
 import type { BillHistory, BillFood } from '@/types/bill';
@@ -7,9 +8,6 @@ import type { BillHistory, BillFood } from '@/types/bill';
 interface BillHistoryListProps {
   history: BillHistory[];
 }
-
-const FIELD_LABEL_CLASS = 'font-semibold';
-const FIELD_VALUE_CLASS = 'font-mono';
 
 const TIME_LABEL = 'Thời gian: ';
 const LIST_LABEL = 'Danh sách món cũ:';
@@ -25,13 +23,11 @@ const BillHistoryList: React.FC<BillHistoryListProps> = ({ history }) => (
           className="mb-2 border-b last:border-b-0 pb-2 sm:pb-3"
         >
           <div>
-            <span className={FIELD_LABEL_CLASS}>{TIME_LABEL}</span>
-            <span className={FIELD_VALUE_CLASS}>
-              {new Date(h.updatedAt).toLocaleString('vi-VN')}
-            </span>
+            <span>{TIME_LABEL}</span>
+            <span>{formatDate(h.updatedAt)}</span>
           </div>
           <div>
-            <span className={FIELD_LABEL_CLASS}>{LIST_LABEL}</span>
+            <span>{LIST_LABEL}</span>
             <ul className="list-disc ml-4 sm:ml-5">
               {h.oldData.foods?.map((f: BillFood, i: number) => (
                 <li key={i}>
