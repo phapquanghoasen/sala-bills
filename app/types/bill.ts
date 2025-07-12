@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase-admin/firestore';
+import { Timestamp } from "firebase/firestore";
 
 export interface BillFood {
   id: string;
