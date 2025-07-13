@@ -11,6 +11,8 @@ import {
   orderBy,
   limit,
   onSnapshot,
+  getDocs,
+  updateDoc,
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
@@ -80,6 +82,26 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, onEdit }) => {
     });
     return () => unsubscribe();
   }, [bill.id]);
+
+  useEffect(() => {
+    if (printStatus === 'pending') {
+      const timer = setTimeout(async () => {
+        const q = query(
+          collection(db, 'printQueue'),
+          where('billId', '==', bill.id),
+          orderBy('createdAt', 'desc'),
+          limit(1)
+        );
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const docRef = snapshot.docs[0].ref;
+          await updateDoc(docRef, { status: 'failed' });
+        }
+      }, 20000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [printStatus, bill.id]);
 
   const handlePrint = async () => {
     const confirmPrint = window.confirm('Bạn có chắc chắn muốn gửi yêu cầu in hóa đơn này?');
