@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { addDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
+import { useRequireUser } from '@/hooks/useRequireUser';
 
 import type { BillFormData } from '@/types/bill';
 
@@ -20,9 +21,12 @@ const CREATE_BILL_SUBMIT_LABEL = 'Tạo hóa đơn';
 const CREATE_BILL_SUBMIT_LABEL_LOADING = 'Đang tạo...';
 
 const CreateBill: React.FC = () => {
+  const { user, userLoading } = useRequireUser();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+
+  if (userLoading || !user) return <div>Đang kiểm tra đăng nhập...</div>;
 
   const handleCreateBill = async ({ tableNumber, note, foods }: BillFormData) => {
     if (!tableNumber.trim() || foods.length === 0) {
@@ -43,6 +47,7 @@ const CreateBill: React.FC = () => {
         note,
         foods,
         createdAt: serverTimestamp(),
+        createdBy: user.email,
         history: [],
       });
       router.push('/bills');

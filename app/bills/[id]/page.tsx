@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { doc, getDoc, updateDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
+import { useRequireUser } from '@/hooks/useRequireUser';
 import { getBillTotal } from '@/utils/bill';
 
 import type { Bill, BillFormData } from '@/types/bill';
@@ -29,17 +30,18 @@ interface BillDetailProps {
 }
 
 const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
+  const { user, userLoading } = useRequireUser();
   const { id } = React.use(params);
   const [bill, setBill] = useState<Bill | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [billLoading, setBillLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Realtime listener cho bill
   useEffect(() => {
-    if (!id) return;
-    setLoading(true);
+    if (userLoading || !user || !id) return;
+    setBillLoading(true);
     const billDoc = doc(db, 'bills', id);
     const unsubscribe = onSnapshot(
       billDoc,
@@ -51,15 +53,20 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
           setBill(null);
           setError(BILL_NOT_FOUND);
         }
-        setLoading(false);
+        setBillLoading(false);
       },
       () => {
         setError(BILL_LOAD_ERROR);
-        setLoading(false);
+        setBillLoading(false);
       }
     );
     return () => unsubscribe();
-  }, [id]);
+  }, [id, user, userLoading]);
+
+  if (userLoading || !user) return <div>Đang kiểm tra đăng nhập...</div>;
+  if (billLoading) return <div>{BILL_LOADING}</div>;
+  if (error) return <div>{error}</div>;
+  if (!bill) return <div>{BILL_NOT_FOUND}</div>;
 
   const handleUpdateBill = async ({ tableNumber, note, foods }: BillFormData) => {
     setIsSaving(true);
@@ -73,7 +80,6 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
         return;
       }
       const oldBill = billSnap.data();
-      const updatedAt = Timestamp.now();
 
       await updateDoc(billRef, {
         code: oldBill.code,
@@ -83,12 +89,12 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
         history: [
           ...(oldBill.history || []),
           {
-            updatedAt,
-            oldData: {
-              code: oldBill.code,
-              note: oldBill.note,
-              foods: oldBill.foods,
-            },
+            code: oldBill.code,
+            foods: oldBill.foods,
+            note: oldBill.note,
+            tableNumber: oldBill.tableNumber,
+            updatedAt: Timestamp.now(),
+            updatedBy: user.email,
           },
         ],
       });
@@ -101,10 +107,6 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
       setIsSaving(false);
     }
   };
-
-  if (loading) return <div>{BILL_LOADING}</div>;
-  if (error) return <div>{error}</div>;
-  if (!bill) return <div>{BILL_NOT_FOUND}</div>;
 
   const total = getBillTotal(bill.foods);
 

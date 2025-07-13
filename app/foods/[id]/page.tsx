@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
+import { useRequireUser } from '@/hooks/useRequireUser';
 import { formatPrice } from '@/utils/format';
 
 import { Food } from '@/types/food';
@@ -29,14 +30,17 @@ const FOOD_DETAIL_INVALID = 'Vui lòng nhập thông tin hợp lệ.';
 const FOOD_DETAIL_UPDATE_ERROR = 'Lỗi khi cập nhật món ăn';
 
 const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
+  const { user, userLoading } = useRequireUser();
   const { id } = React.use(params);
 
   const [food, setFood] = useState<Food | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [foodLoading, setFoodLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
+    if (userLoading || !user) return;
+
     const fetchFood = async () => {
       if (id) {
         try {
@@ -50,13 +54,18 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
         } catch {
           setError('Lỗi khi tải món ăn!');
         } finally {
-          setLoading(false);
+          setFoodLoading(false);
         }
       }
     };
 
     fetchFood();
-  }, [id]);
+  }, [id, user, userLoading]);
+
+  if (userLoading || !user) return <div>Đang kiểm tra đăng nhập...</div>;
+  if (foodLoading) return <div>{FOOD_DETAIL_LOADING}</div>;
+  if (error) return <div>{error}</div>;
+  if (!food) return <div>{FOOD_DETAIL_NOT_FOUND}</div>;
 
   const handleEdit = () => setEditMode(true);
   const handleCancel = () => setEditMode(false);
@@ -84,10 +93,6 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
       setError(FOOD_DETAIL_UPDATE_ERROR);
     }
   };
-
-  if (loading) return <div>{FOOD_DETAIL_LOADING}</div>;
-  if (error) return <div>{error}</div>;
-  if (!food) return <div>{FOOD_DETAIL_NOT_FOUND}</div>;
 
   return (
     <div className="container mx-auto p-4">

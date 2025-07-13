@@ -9,7 +9,7 @@ interface BillHistoryListProps {
   history: BillHistory[];
 }
 
-const TIME_LABEL = 'Thời gian: ';
+const TIME_LABEL = 'Thời gian:';
 const LIST_LABEL = 'Danh sách món cũ:';
 
 const BillHistoryList: React.FC<BillHistoryListProps> = ({ history }) => (
@@ -24,12 +24,17 @@ const BillHistoryList: React.FC<BillHistoryListProps> = ({ history }) => (
         >
           <div>
             <span>{TIME_LABEL}</span>
-            <span>{formatDate(h.updatedAt)}</span>
+            <span className="ml-1">{formatDate(h.updatedAt)}</span>
           </div>
+          <div>
+            <span>Cập nhật bởi:</span>
+            <span className="ml-1">{h.updatedBy}</span>
+          </div>
+
           <div>
             <span>{LIST_LABEL}</span>
             <ul className="list-disc ml-4 sm:ml-5">
-              {h.oldData.foods?.map((f: BillFood, i: number) => (
+              {h.foods?.map((f: BillFood, i: number) => (
                 <li key={i}>
                   {f.name} (SL: {f.quantity}, Giá: {formatPrice(f.price)})
                 </li>

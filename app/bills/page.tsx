@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
+import { useRequireUser } from '@/hooks/useRequireUser';
 import { getBillTotal } from '@/utils/bill';
 import { formatPrice } from '@/utils/format';
 
@@ -45,12 +46,14 @@ const columns: Column<Bill>[] = [
 ];
 
 const Bills: React.FC = () => {
+  const { user, userLoading } = useRequireUser();
   const [bills, setBills] = useState<Bill[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [billsLoading, setBillsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
+    if (userLoading || !user) return;
     const fetchBills = async () => {
       try {
         const billsQuery = query(collection(db, 'bills'), orderBy('createdAt', 'desc'));
@@ -64,13 +67,15 @@ const Bills: React.FC = () => {
         console.error('Error fetching bills:', error);
         setError(BILLS_ERROR);
       } finally {
-        setLoading(false);
+        setBillsLoading(false);
       }
     };
     fetchBills();
-  }, []);
+  }, [user, userLoading]);
 
-  if (loading) return <div>{BILLS_LOADING}</div>;
+  if (userLoading || !user) return <div>Đang kiểm tra đăng nhập...</div>;
+
+  if (billsLoading) return <div>{BILLS_LOADING}</div>;
   if (error) return <div>{error}</div>;
 
   return (

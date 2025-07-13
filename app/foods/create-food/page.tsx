@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/config';
+import { useRequireUser } from '@/hooks/useRequireUser';
 
 import { RequestCreateFood } from '@/types/food';
 
@@ -16,8 +17,12 @@ const CREATE_FOOD_TITLE = 'Thêm món ăn mới';
 const CREATE_FOOD_ERROR = 'Không thể tạo món ăn mới. Vui lòng thử lại sau.';
 
 const CreateFood: React.FC = () => {
+  const { user, userLoading } = useRequireUser();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  if (userLoading) return <div>Đang kiểm tra đăng nhập...</div>;
+  if (!user) return null;
 
   const handleCreateFood = async ({ name, description, price }: RequestCreateFood) => {
     const foodData = {

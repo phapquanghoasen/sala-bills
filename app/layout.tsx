@@ -3,6 +3,7 @@ import './globals.css';
 import { Roboto } from 'next/font/google';
 
 import Layout from './components/Layout';
+import { UserProvider } from './contexts/UserContext';
 
 import type { Metadata } from 'next';
 
@@ -27,7 +28,9 @@ export default function RootLayout({
       className={roboto.className}
     >
       <body>
-        <Layout>{children}</Layout>
+        <UserProvider>
+          <Layout>{children}</Layout>
+        </UserProvider>
       </body>
     </html>
   );

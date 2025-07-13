@@ -6,12 +6,13 @@ const Home: React.FC = () => {
   return (
     <div className="flex flex-col items-center">
       <Image
-        src="/images/tay-phuong-cuc-lac.jpg"
-        alt="Home"
+        src="/images/amitabha.jpg"
+        alt="Amitabha"
         fill
         style={{ objectFit: 'cover' }}
         className="rounded"
         priority
+        quality={100}
       />
     </div>
   );

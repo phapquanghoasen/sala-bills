@@ -31,16 +31,17 @@ interface ViewBillProps {
   onEdit: () => void;
 }
 
-const BILL_DETAIL_NOTE = 'Ghi chú';
-const BILL_DETAIL_TOTAL = 'Tổng tiền';
-const BILL_DETAIL_DATE = 'Ngày tạo';
-const BILL_DETAIL_CODE = 'Mã hóa đơn';
-const BILL_DETAIL_LIST = 'Danh sách món ăn';
-const BILL_DETAIL_EDIT = 'Chỉnh sửa';
-const BILL_DETAIL_PRINT = 'In hóa đơn';
-const BILL_DETAIL_PRINT_LOADING = 'Đang gửi...';
-const BILL_DETAIL_HISTORY = 'Lịch sử chỉnh sửa';
-const BILL_DETAIL_TABLE_NUMBER = 'Số bàn';
+const BILL_NOTE = 'Ghi chú:';
+const BILL_TOTAL = 'Tổng tiền:';
+const BILL_CREATED_AT = 'Ngày tạo:';
+const BILL_CREATE_BY = 'Người tạo:';
+const BILL_CODE = 'Mã hóa đơn:';
+const BILL_LIST_TITLE = 'Danh sách món ăn:';
+const BILL_EDIT = 'Chỉnh sửa';
+const BILL_PRINT = 'In hóa đơn';
+const BILL_PRINT_LOADING = 'Đang gửi...';
+const BILL_HISTORY = 'Lịch sử chỉnh sửa';
+const BILL_TABLE_NUMBER = 'Số bàn:';
 
 const BILL_PRINT_STATUS = {
   pending: 'Đang chờ xử lý',
@@ -135,22 +136,26 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
       <h1 className="text-xl font-bold text-center uppercase mb-4 sm:text-2xl sm:mb-6">{title}</h1>
       <div>
         <p className="mb-1 text-sm sm:text-base">
-          <b>{BILL_DETAIL_DATE}:</b>
+          <b>{BILL_CREATED_AT}</b>
           <span className="ml-1">{formatDate(bill.createdAt)}</span>
         </p>
         <p className="mb-1 text-sm sm:text-base">
-          <b>{BILL_DETAIL_CODE}:</b>
+          <b>{BILL_CREATE_BY}</b>
+          <span className="ml-1">{bill.createdBy}</span>
+        </p>
+        <p className="mb-1 text-sm sm:text-base">
+          <b>{BILL_CODE}</b>
           <span className="ml-1">{bill.code}</span>
         </p>
         <p className="mb-1 text-sm sm:text-base">
-          <b>{BILL_DETAIL_TABLE_NUMBER}:</b>
+          <b>{BILL_TABLE_NUMBER}</b>
           <span className="ml-1">{bill.tableNumber}</span>
         </p>
         <p className="mb-1 text-sm sm:text-base">
-          <b>{BILL_DETAIL_NOTE}:</b>
+          <b>{BILL_NOTE}</b>
           <span className="ml-1">{bill.note}</span>
         </p>
-        <h2 className="text-base sm:text-lg mt-4 mb-2">{BILL_DETAIL_LIST}</h2>
+        <h2 className="text-base sm:text-lg mt-4 mb-2">{BILL_LIST_TITLE}</h2>
         <div className="overflow-x-auto">
           <Table
             columns={columns}
@@ -159,12 +164,12 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
         </div>
         <div className="flex justify-end mt-2">
           <p className="text-base sm:text-lg">
-            <b>{BILL_DETAIL_TOTAL}:</b>
+            <b>{BILL_TOTAL}:</b>
             <span className="ml-1">{formatPrice(total)}</span>
           </p>
         </div>
         {printLoading && (
-          <p className="text-yellow-600 font-medium mt-2 mb-0">{BILL_DETAIL_PRINT_LOADING}</p>
+          <p className="text-yellow-600 font-medium mt-2 mb-0">{BILL_PRINT_LOADING}</p>
         )}
         {printStatus && (
           <p className="text-blue-600 font-medium mt-2 mb-0">
@@ -179,7 +184,7 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
           onClick={onEdit}
           disabled={isEditButtonDisabled}
         >
-          {BILL_DETAIL_EDIT}
+          {BILL_EDIT}
         </button>
         <button
           className={clsx(
@@ -189,11 +194,11 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
           onClick={handlePrint}
           disabled={isPrintButtonDisabled}
         >
-          {printLoading ? BILL_DETAIL_PRINT_LOADING : BILL_DETAIL_PRINT}
+          {printLoading ? BILL_PRINT_LOADING : BILL_PRINT}
         </button>
         {bill.history && bill.history.length > 0 && (
           <div className="my-6">
-            <h2 className="text-base sm:text-lg mb-2">{BILL_DETAIL_HISTORY}</h2>
+            <h2 className="text-base sm:text-lg mb-2">{BILL_HISTORY}</h2>
             <BillHistoryList history={bill.history} />
           </div>
         )}
