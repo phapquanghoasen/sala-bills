@@ -6,7 +6,6 @@ import { doc, getDoc, updateDoc, onSnapshot, Timestamp } from 'firebase/firestor
 
 import { db } from '@/firebase/config';
 import { useRequireUser } from '@/hooks/useRequireUser';
-import { getBillTotal } from '@/utils/bill';
 
 import type { Bill, BillFormData } from '@/types/bill';
 
@@ -108,8 +107,6 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
     }
   };
 
-  const total = getBillTotal(bill.foods);
-
   return (
     <div className="container mx-auto p-4">
       {editMode ? (
@@ -128,8 +125,6 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
         <ViewBill
           title={VIEW_BILL_TITLE}
           bill={bill}
-          billId={id}
-          total={total}
           onEdit={() => setEditMode(true)}
         />
       )}

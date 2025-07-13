@@ -25,8 +25,6 @@ import Table from '@/components/Table';
 
 interface ViewBillProps {
   bill: Bill;
-  billId: string;
-  total: number;
   title: string;
   onEdit: () => void;
 }
@@ -62,14 +60,14 @@ function getPrintBillStatus(printStatus: string | null) {
     : BILL_PRINT_STATUS.pending;
 }
 
-const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit }) => {
+const ViewBill: React.FC<ViewBillProps> = ({ title, bill, onEdit }) => {
   const [printLoading, setPrintLoading] = useState(false);
   const [printStatus, setPrintStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const q = query(
       collection(db, 'printQueue'),
-      where('billId', '==', billId),
+      where('billId', '==', bill.id),
       orderBy('createdAt', 'desc'),
       limit(1)
     );
@@ -81,7 +79,7 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
       }
     });
     return () => unsubscribe();
-  }, [billId]);
+  }, [bill.id]);
 
   const handlePrint = async () => {
     const confirmPrint = window.confirm('Bạn có chắc chắn muốn gửi yêu cầu in hóa đơn này?');
@@ -89,14 +87,10 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
     setPrintLoading(true);
     try {
       await addDoc(collection(db, 'printQueue'), {
-        billId,
-        code: bill.code,
-        note: bill.note,
-        foods: bill.foods,
-        total: getBillTotal(bill.foods),
-        createdAt: serverTimestamp(),
+        billId: bill.id,
         status: 'pending',
         posSecret: process.env.NEXT_PUBLIC_POS_SECRET,
+        createdAt: serverTimestamp(),
       });
     } finally {
       setPrintLoading(false);
@@ -130,6 +124,7 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
   const printBillStatus = getPrintBillStatus(printStatus);
   const isPrintButtonDisabled = !canEditOrPrint(printStatus, printLoading);
   const isEditButtonDisabled = !canEditOrPrint(printStatus, printLoading);
+  const totalPrice = getBillTotal(bill.foods);
 
   return (
     <div>
@@ -165,7 +160,7 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, billId, total, onEdit 
         <div className="flex justify-end mt-2">
           <p className="text-base sm:text-lg">
             <b>{BILL_TOTAL}:</b>
-            <span className="ml-1">{formatPrice(total)}</span>
+            <span className="ml-1">{formatPrice(totalPrice)}</span>
           </p>
         </div>
         {printLoading && (
