@@ -61,6 +61,9 @@ function getPrintBillStatus(printStatus: string | null) {
 }
 
 const ViewBill: React.FC<ViewBillProps> = ({ title, bill, onEdit }) => {
+
+  console.log('bill', bill)
+
   const [printLoading, setPrintLoading] = useState(false);
   const [printStatus, setPrintStatus] = useState<string | null>(null);
 

@@ -41,22 +41,22 @@ const BillDetail: React.FC<BillDetailProps> = ({ params }) => {
   useEffect(() => {
     if (userLoading || !user || !id) return;
     setBillLoading(true);
-    const billDoc = doc(db, 'bills', id);
+    const billDocRef = doc(db, 'bills', id);
     const unsubscribe = onSnapshot(
-      billDoc,
-      billData => {
-        if (billData.exists()) {
-          setBill(billData.data() as Bill);
+      billDocRef,
+      snapshot => {
+        setBillLoading(false);
+        if (snapshot.exists()) {
+          setBill({ id: snapshot.id, ...snapshot.data() } as Bill);
           setError(null);
         } else {
           setBill(null);
           setError(BILL_NOT_FOUND);
         }
-        setBillLoading(false);
       },
       () => {
-        setError(BILL_LOAD_ERROR);
         setBillLoading(false);
+        setError(BILL_LOAD_ERROR);
       }
     );
     return () => unsubscribe();
