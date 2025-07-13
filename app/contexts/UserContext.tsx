@@ -29,6 +29,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           id: firebaseUser.uid,
           role: userData.role,
           email: userData.email,
+          printerIp: userData.printerIp,
           createdAt: userData.createdAt,
         });
       } else {

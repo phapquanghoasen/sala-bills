@@ -5,4 +5,5 @@ export type User = {
   role: string;
   email: string;
   createdAt: Timestamp;
+  printerIp?: string;
 };
