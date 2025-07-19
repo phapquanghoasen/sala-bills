@@ -38,7 +38,8 @@ const BILL_CREATE_BY = 'Người tạo:';
 const BILL_CODE = 'Mã hóa đơn:';
 const BILL_LIST_TITLE = 'Danh sách món ăn:';
 const BILL_EDIT = 'Chỉnh sửa';
-const BILL_PRINT = 'In hóa đơn';
+const BILL_PRINT_CLIENT = 'In hóa đơn khách';
+const BILL_PRINT_KITCHEN = 'In hóa đơn bếp';
 const BILL_PRINT_LOADING = 'Đang gửi...';
 const BILL_HISTORY = 'Lịch sử chỉnh sửa';
 const BILL_TABLE_NUMBER = 'Số bàn:';
@@ -63,31 +64,53 @@ function getPrintBillStatus(printStatus: string | null) {
 }
 
 const ViewBill: React.FC<ViewBillProps> = ({ title, bill, onEdit }) => {
-  const [printLoading, setPrintLoading] = useState(false);
-  const [printStatus, setPrintStatus] = useState<string | null>(null);
+  const [printClientLoading, setPrintClientLoading] = useState(false);
+  const [printKitchenLoading, setPrintKitchenLoading] = useState(false);
+  const [printClientStatus, setPrintClientStatus] = useState<string | null>(null);
+  const [printKitchenStatus, setPrintKitchenStatus] = useState<string | null>(null);
 
+  // Monitor print client status
   useEffect(() => {
     const q = query(
-      collection(db, 'printQueue'),
+      collection(db, 'printClientBills'),
       where('billId', '==', bill.id),
       orderBy('createdAt', 'desc'),
       limit(1)
     );
     const unsubscribe = onSnapshot(q, snapshot => {
       if (!snapshot.empty) {
-        setPrintStatus(snapshot.docs[0].data().status);
+        setPrintClientStatus(snapshot.docs[0].data().status);
       } else {
-        setPrintStatus(null);
+        setPrintClientStatus(null);
       }
     });
     return () => unsubscribe();
   }, [bill.id]);
 
+  // Monitor print kitchen status
   useEffect(() => {
-    if (printStatus === 'pending') {
+    const q = query(
+      collection(db, 'printKitchenBills'),
+      where('billId', '==', bill.id),
+      orderBy('createdAt', 'desc'),
+      limit(1)
+    );
+    const unsubscribe = onSnapshot(q, snapshot => {
+      if (!snapshot.empty) {
+        setPrintKitchenStatus(snapshot.docs[0].data().status);
+      } else {
+        setPrintKitchenStatus(null);
+      }
+    });
+    return () => unsubscribe();
+  }, [bill.id]);
+
+  // Auto-fail client print after timeout
+  useEffect(() => {
+    if (printClientStatus === 'pending') {
       const timer = setTimeout(async () => {
         const q = query(
-          collection(db, 'printQueue'),
+          collection(db, 'printClientBills'),
           where('billId', '==', bill.id),
           orderBy('createdAt', 'desc'),
           limit(1)
@@ -101,21 +124,58 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, onEdit }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [printStatus, bill.id]);
+  }, [printClientStatus, bill.id]);
 
-  const handlePrint = async () => {
-    const confirmPrint = window.confirm('Bạn có chắc chắn muốn gửi yêu cầu in hóa đơn này?');
+  // Auto-fail kitchen print after timeout
+  useEffect(() => {
+    if (printKitchenStatus === 'pending') {
+      const timer = setTimeout(async () => {
+        const q = query(
+          collection(db, 'printKitchenBills'),
+          where('billId', '==', bill.id),
+          orderBy('createdAt', 'desc'),
+          limit(1)
+        );
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const docRef = snapshot.docs[0].ref;
+          await updateDoc(docRef, { status: 'failed' });
+        }
+      }, 20000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [printKitchenStatus, bill.id]);
+
+  const handlePrintClient = async () => {
+    const confirmPrint = window.confirm('Bạn có chắc chắn muốn gửi yêu cầu in hóa đơn khách?');
     if (!confirmPrint) return;
-    setPrintLoading(true);
+    setPrintClientLoading(true);
     try {
-      await addDoc(collection(db, 'printQueue'), {
+      await addDoc(collection(db, 'printClientBills'), {
         billId: bill.id,
         status: 'pending',
         posSecret: process.env.NEXT_PUBLIC_POS_SECRET,
         createdAt: serverTimestamp(),
       });
     } finally {
-      setPrintLoading(false);
+      setPrintClientLoading(false);
+    }
+  };
+
+  const handlePrintKitchen = async () => {
+    const confirmPrint = window.confirm('Bạn có chắc chắn muốn gửi yêu cầu in hóa đơn bếp?');
+    if (!confirmPrint) return;
+    setPrintKitchenLoading(true);
+    try {
+      await addDoc(collection(db, 'printKitchenBills'), {
+        billId: bill.id,
+        status: 'pending',
+        posSecret: process.env.NEXT_PUBLIC_POS_SECRET,
+        createdAt: serverTimestamp(),
+      });
+    } finally {
+      setPrintKitchenLoading(false);
     }
   };
 
@@ -143,9 +203,12 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, onEdit }) => {
     },
   ];
 
-  const printBillStatus = getPrintBillStatus(printStatus);
-  const isPrintButtonDisabled = !canEditOrPrint(printStatus, printLoading);
-  const isEditButtonDisabled = !canEditOrPrint(printStatus, printLoading);
+  const printClientBillStatus = getPrintBillStatus(printClientStatus);
+  const printKitchenBillStatus = getPrintBillStatus(printKitchenStatus);
+  const isPrintClientButtonDisabled = !canEditOrPrint(printClientStatus, printClientLoading);
+  const isPrintKitchenButtonDisabled = !canEditOrPrint(printKitchenStatus, printKitchenLoading);
+  const isEditButtonDisabled = !canEditOrPrint(printClientStatus, printClientLoading) || 
+                                !canEditOrPrint(printKitchenStatus, printKitchenLoading);
   const totalPrice = getBillTotal(bill.foods);
 
   return (
@@ -181,16 +244,21 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, onEdit }) => {
         </div>
         <div className="flex justify-end mt-2">
           <p className="text-base sm:text-lg">
-            <b>{BILL_TOTAL}:</b>
+            <b>{BILL_TOTAL}</b>
             <span className="ml-1">{formatPrice(totalPrice)}</span>
           </p>
         </div>
-        {printLoading && (
+        {(printClientLoading || printKitchenLoading) && (
           <p className="text-yellow-600 font-medium mt-2 mb-0">{BILL_PRINT_LOADING}</p>
         )}
-        {printStatus && (
+        {printClientStatus && (
           <p className="text-blue-600 font-medium mt-2 mb-0">
-            Trạng thái in hóa đơn: {printBillStatus}
+            Trạng thái in hóa đơn khách: {printClientBillStatus}
+          </p>
+        )}
+        {printKitchenStatus && (
+          <p className="text-green-600 font-medium mt-2 mb-0">
+            Trạng thái in hóa đơn bếp: {printKitchenBillStatus}
           </p>
         )}
         <button
@@ -205,13 +273,23 @@ const ViewBill: React.FC<ViewBillProps> = ({ title, bill, onEdit }) => {
         </button>
         <button
           className={clsx(
-            'mt-2 sm:mt-6 sm:ml-4 px-3 py-2 sm:px-4 sm:py-2 rounded print:hidden w-full sm:w-auto bg-green-500 text-white',
-            { 'opacity-50 cursor-not-allowed': isPrintButtonDisabled }
+            'mt-2 sm:mt-6 sm:ml-4 px-3 py-2 sm:px-4 sm:py-2 rounded print:hidden w-full sm:w-auto bg-blue-500 text-white',
+            { 'opacity-50 cursor-not-allowed': isPrintClientButtonDisabled }
           )}
-          onClick={handlePrint}
-          disabled={isPrintButtonDisabled}
+          onClick={handlePrintClient}
+          disabled={isPrintClientButtonDisabled}
         >
-          {printLoading ? BILL_PRINT_LOADING : BILL_PRINT}
+          {printClientLoading ? BILL_PRINT_LOADING : BILL_PRINT_CLIENT}
+        </button>
+        <button
+          className={clsx(
+            'mt-2 sm:mt-6 sm:ml-4 px-3 py-2 sm:px-4 sm:py-2 rounded print:hidden w-full sm:w-auto bg-green-500 text-white',
+            { 'opacity-50 cursor-not-allowed': isPrintKitchenButtonDisabled }
+          )}
+          onClick={handlePrintKitchen}
+          disabled={isPrintKitchenButtonDisabled}
+        >
+          {printKitchenLoading ? BILL_PRINT_LOADING : BILL_PRINT_KITCHEN}
         </button>
         {bill.history && bill.history.length > 0 && (
           <div className="my-6">

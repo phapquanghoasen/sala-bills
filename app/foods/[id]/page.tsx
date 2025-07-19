@@ -28,6 +28,7 @@ const FOOD_DETAIL_LOADING = 'Đang tải...';
 const FOOD_DETAIL_NOT_FOUND = 'Không tìm thấy món ăn!';
 const FOOD_DETAIL_INVALID = 'Vui lòng nhập thông tin hợp lệ.';
 const FOOD_DETAIL_UPDATE_ERROR = 'Lỗi khi cập nhật món ăn';
+const FOOD_DETAIL_TYPE = 'Nhóm món ăn';
 
 const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
   const { user, userLoading } = useRequireUser();
@@ -70,8 +71,18 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
   const handleEdit = () => setEditMode(true);
   const handleCancel = () => setEditMode(false);
 
-  const handleEditSubmit = async (data: { name: string; description: string; price: number }) => {
-    if (!data.name.trim() || isNaN(Number(data.price)) || Number(data.price) < 0) {
+  const handleEditSubmit = async (data: {
+    name: string;
+    description: string;
+    price: number;
+    type: string;
+  }) => {
+    if (
+      !data.name.trim() ||
+      isNaN(Number(data.price)) ||
+      Number(data.price) < 0 ||
+      !data.type.trim()
+    ) {
       setError(FOOD_DETAIL_INVALID);
       return;
     }
@@ -81,6 +92,7 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
         name: data.name,
         description: data.description,
         price: Number(data.price),
+        type: data.type,
       });
       setFood({
         ...food,
@@ -113,6 +125,10 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ params }) => {
           <p className="mb-2">
             <b>{FOOD_DETAIL_NAME}:</b>
             <span className="m-1">{food.name}</span>
+          </p>
+          <p className="mb-2">
+            <b>{FOOD_DETAIL_TYPE}:</b>
+            <span className="m-1">{food.type}</span>
           </p>
           <p className="mb-2">
             <b>{FOOD_DETAIL_PRICE}:</b>

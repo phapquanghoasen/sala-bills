@@ -24,11 +24,19 @@ const CreateFood: React.FC = () => {
   if (userLoading) return <div>Đang kiểm tra đăng nhập...</div>;
   if (!user) return null;
 
-  const handleCreateFood = async ({ name, description, price }: RequestCreateFood) => {
+  const handleCreateFood = async ({
+    name,
+    description,
+    price,
+    type,
+    imageUrl,
+  }: RequestCreateFood) => {
     const foodData = {
       name,
       description,
       price,
+      type,
+      imageUrl,
       createdAt: serverTimestamp(),
     };
 

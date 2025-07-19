@@ -7,6 +7,7 @@ export interface BillFood {
   quantity: number;
   description: string;
   imageUrl: string;
+  type: string;
 }
 
 export interface BillHistory {

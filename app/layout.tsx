@@ -27,7 +27,7 @@ export default function RootLayout({
       lang="vi"
       className={roboto.className}
     >
-      <body>
+      <body suppressHydrationWarning={true}>
         <UserProvider>
           <Layout>{children}</Layout>
         </UserProvider>

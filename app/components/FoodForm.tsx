@@ -16,6 +16,7 @@ interface FoodFormProps {
 const FOOD_FORM_DESC = 'Mô tả';
 const FOOD_FORM_NAME = 'Tên món ăn';
 const FOOD_FORM_PRICE = 'Giá';
+const FOOD_FORM_TYPE = 'Nhóm món ăn';
 
 const FoodForm = ({
   initialData = {},
@@ -28,12 +29,14 @@ const FoodForm = ({
   const [name, setName] = useState<string>(initialData.name || '');
   const [price, setPrice] = useState<string>(String(initialData.price || ''));
   const [description, setDescription] = useState<string>(initialData.description || '');
+  const [type, setType] = useState<string>(initialData.type || '');
 
   useEffect(() => {
     setName(initialData.name || '');
     setPrice(String(initialData.price || ''));
     setDescription(initialData.description || '');
-  }, [initialData.name, initialData.price, initialData.description]);
+    setType(initialData.type || '');
+  }, [initialData.name, initialData.price, initialData.description, initialData.type]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +44,8 @@ const FoodForm = ({
       name,
       description,
       price: parseFloat(price),
+      type,
+      imageUrl: '',
     });
   };
 
@@ -61,6 +66,20 @@ const FoodForm = ({
           onChange={e => setName(e.target.value)}
           required
           className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-base"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          {FOOD_FORM_TYPE}
+          <span className="text-red-500 ml-1">*</span>
+        </label>
+        <input
+          type="text"
+          value={type}
+          onChange={e => setType(e.target.value)}
+          required
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 text-base"
+          placeholder="1, 2, 3 ..."
         />
       </div>
       <div>

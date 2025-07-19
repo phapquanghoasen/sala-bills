@@ -79,6 +79,10 @@ const BillForm = ({
     fetchFoods();
   }, []);
 
+
+  console.log('Selected Foods:', selectedFoods);
+  console.log('Available Foods:', foods);
+
   const availableFoods = foods.filter(food => !selectedFoods.some(f => f.id === food.id));
   const filteredFoods = availableFoods.filter(food =>
     food.name.toLowerCase().includes(search.toLowerCase())
@@ -93,6 +97,7 @@ const BillForm = ({
         price: food.price || 0,
         description: food.description || '',
         imageUrl: food.imageUrl || '',
+        type: food.type || '',
         quantity: 1,
       },
     ]);
@@ -113,6 +118,9 @@ const BillForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('first submit', selectedFoods);
+
     await onSubmit({
       tableNumber,
       note,

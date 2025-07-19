@@ -44,6 +44,7 @@ export default function FoodsPage() {
             description: data.description || '',
             price: typeof data.price === 'number' ? data.price : 0,
             imageUrl: data.imageUrl || '',
+            type: data.type || '',
             createdAt: data.createdAt,
           };
         });
