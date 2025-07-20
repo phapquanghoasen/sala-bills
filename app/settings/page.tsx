@@ -50,6 +50,7 @@ export default function SettingsPage() {
     setSaving(true);
     setError('');
     setSuccess('');
+
     try {
       await updateDoc(doc(db, 'users', user.id), {
         printerClientIp,
@@ -70,9 +71,9 @@ export default function SettingsPage() {
 
   const resetForm = () => {
     setPrinterClientIp(user.printerClientIp || '');
-    setPrinterClientPort(user.printerClientPort || 9100);
+    setPrinterClientPort(user.printerClientPort || 0);
     setPrinterKitchenIp(user.printerKitchenIp || '');
-    setPrinterKitchenPort(user.printerKitchenPort || 9100);
+    setPrinterKitchenPort(user.printerKitchenPort || 0);
     setEditMode(false);
     setError('');
     setSuccess('');
@@ -108,13 +109,15 @@ export default function SettingsPage() {
           </label>
           {!editMode ? (
             <span className="font-mono break-all text-gray-800 text-base sm:text-lg px-2 py-2 bg-gray-50 rounded border border-gray-200 block">
-              {printerClientPort || <i>Chưa có</i>}
+              {printerClientPort ? printerClientPort : <i>Chưa có</i>}
             </span>
           ) : (
             <input
               type="number"
+              min="1"
+              max="65535"
               className="w-full border border-gray-300 rounded p-2 text-base sm:text-lg"
-              value={printerClientPort}
+              value={printerClientPort || ''}
               onChange={e => setPrinterClientPort(Number(e.target.value))}
               placeholder="VD: 9100"
               disabled={saving}
@@ -122,7 +125,6 @@ export default function SettingsPage() {
           )}
         </div>
 
-        {/* Máy in nhà bếp */}
         <div>
           <label className="block mb-2 font-semibold text-gray-700 text-base sm:text-lg">
             {KITCHEN_PRINTER_IP_LABEL}
@@ -149,13 +151,15 @@ export default function SettingsPage() {
           </label>
           {!editMode ? (
             <span className="font-mono break-all text-gray-800 text-base sm:text-lg px-2 py-2 bg-gray-50 rounded border border-gray-200 block">
-              {printerKitchenPort || <i>Chưa có</i>}
+              {printerKitchenPort ? printerKitchenPort : <i>Chưa có</i>}
             </span>
           ) : (
             <input
               type="number"
+              min="1"
+              max="65535"
               className="w-full border border-gray-300 rounded p-2 text-base sm:text-lg"
-              value={printerKitchenPort}
+              value={printerKitchenPort || ''}
               onChange={e => setPrinterKitchenPort(Number(e.target.value))}
               placeholder="VD: 9100"
               disabled={saving}
@@ -185,7 +189,7 @@ export default function SettingsPage() {
             </button>
             <button
               type="button"
-              className="w-full px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-sm font-semibold text-base sm:text-lg transition"
+              className="w-full px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold text-base sm:text-lg transition"
               onClick={resetForm}
               disabled={saving}
             >
@@ -194,8 +198,8 @@ export default function SettingsPage() {
           </form>
         )}
 
-        {success && <div className="text-green-600 text-sm">{success}</div>}
-        {error && <div className="text-red-600 text-sm">{error}</div>}
+        {success && <div className="text-green-600 text-sm font-medium">{success}</div>}
+        {error && <div className="text-red-600 text-sm font-medium">{error}</div>}
       </div>
     </div>
   );
